@@ -72,6 +72,21 @@ function unwrapForwards(adapter: ReturnType<typeof createDiscordAdapter>): void 
   };
 }
 
+/**
+ * The adapter opens a "Thread <timestamp>" off every top-level @mention before
+ * the message reaches us, regardless of the wiring's thread policy. With
+ * threads off on a wiring that thread is empty — replies land top-level — so
+ * stop it being created. The adapter treats a failed create as non-fatal
+ * (logs, then falls back to the channel as the thread id), so throwing here
+ * leaves the mention in the channel.
+ */
+export function suppressThreadCreation(adapter: ReturnType<typeof createDiscordAdapter>): void {
+  const a = adapter as unknown as { createDiscordThread: (channelId: string, messageId: string) => Promise<unknown> };
+  a.createDiscordThread = async () => {
+    throw new Error('thread creation disabled');
+  };
+}
+
 registerChannelAdapter('discord', {
   factory: () => {
     const env = readEnvFile(['DISCORD_BOT_TOKEN', 'DISCORD_PUBLIC_KEY', 'DISCORD_APPLICATION_ID']);
@@ -82,6 +97,7 @@ registerChannelAdapter('discord', {
       applicationId: env.DISCORD_APPLICATION_ID,
     });
     unwrapForwards(discordAdapter);
+    suppressThreadCreation(discordAdapter);
     return createChatSdkBridge({
       adapter: discordAdapter,
       concurrency: 'concurrent',
