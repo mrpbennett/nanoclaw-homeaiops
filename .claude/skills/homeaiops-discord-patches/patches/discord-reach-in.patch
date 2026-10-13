@@ -1,0 +1,20 @@
+diff --git a/src/channels/discord.ts b/src/channels/discord.ts
+index f2bb09ec..83e5d005 100644
+--- a/src/channels/discord.ts
++++ b/src/channels/discord.ts
+@@ -8,6 +8,7 @@ import { readEnvFile } from '../env.js';
+ import type { ChannelDefaults } from './adapter.js';
+ import { createChatSdkBridge, type ReplyContext } from './chat-sdk-bridge.js';
+ import { registerChannelAdapter } from './channel-registry.js';
++import { suppressThreadCreation } from './discord-local.js';
+ 
+ /**
+  * Dedicated bot app on a threaded platform. group threads:true matches the
+@@ -82,6 +83,7 @@ registerChannelAdapter('discord', {
+       applicationId: env.DISCORD_APPLICATION_ID,
+     });
+     unwrapForwards(discordAdapter);
++    suppressThreadCreation(discordAdapter);
+     return createChatSdkBridge({
+       adapter: discordAdapter,
+       concurrency: 'concurrent',

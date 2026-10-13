@@ -1,0 +1,24 @@
+# One extended regex per line (grep -E). Every path this fork changes relative
+# to upstream must match a line here, and the line must be explained in SKILL.md.
+# audit.sh reports any changed path that matches nothing.
+
+# Fork-owned: this recipe and its patch skill
+^\.claude/skills/homeaiops-
+# Fork-owned: merge policy for README.md (see SKILL.md, "README")
+^\.gitattributes$
+# Fork-owned: the Home AIOps README
+^README\.md$
+# add-onecli (stock skill output, no local edits)
+^container/skills/onecli-gateway/
+^docs/onecli-upgrades\.md$
+^src/gateway-providers/(installed|onecli[a-z.-]*)\.ts$
+# add-discord (stock skill output)
+^src/channels/index\.ts$
+^src/channels/discord\.ts$
+^src/channels/discord-registration\.test\.ts$
+# Dependencies added by the two skills above (@onecli-sh/sdk, @chat-adapter/discord)
+^package\.json$
+^pnpm-lock\.yaml$
+# homeaiops-discord-patches: installed payload + the one trunk reach-in
+^src/channels/discord-local[a-z-]*\.(test\.)?ts$
+^src/channels/chat-sdk-bridge\.ts$

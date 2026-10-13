@@ -8,6 +8,7 @@ import { readEnvFile } from '../env.js';
 import type { ChannelDefaults } from './adapter.js';
 import { createChatSdkBridge, type ReplyContext } from './chat-sdk-bridge.js';
 import { registerChannelAdapter } from './channel-registry.js';
+import { suppressThreadCreation } from './discord-local.js';
 
 /**
  * Dedicated bot app on a threaded platform. group threads:true matches the
@@ -69,21 +70,6 @@ function unwrapForwards(adapter: ReturnType<typeof createDiscordAdapter>): void 
   a.handleForwardedMessage = async (data, options) => {
     unwrapForwardedSnapshot(data);
     return orig(data, options);
-  };
-}
-
-/**
- * The adapter opens a "Thread <timestamp>" off every top-level @mention before
- * the message reaches us, regardless of the wiring's thread policy. With
- * threads off on a wiring that thread is empty — replies land top-level — so
- * stop it being created. The adapter treats a failed create as non-fatal
- * (logs, then falls back to the channel as the thread id), so throwing here
- * leaves the mention in the channel.
- */
-export function suppressThreadCreation(adapter: ReturnType<typeof createDiscordAdapter>): void {
-  const a = adapter as unknown as { createDiscordThread: (channelId: string, messageId: string) => Promise<unknown> };
-  a.createDiscordThread = async () => {
-    throw new Error('thread creation disabled');
   };
 }
 

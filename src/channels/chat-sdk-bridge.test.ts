@@ -780,32 +780,4 @@ describe('createChatSdkBridge — local Gateway webhook', () => {
       await bridge.teardown();
     }
   });
-
-  it('strips the adapter "\\n<value>" suffix from a button custom_id', async () => {
-    const { bridge, post, onAction } = await startGateway(BOT_TOKEN);
-    try {
-      // @chat-adapter/discord encodes custom_id as "<actionId>\n<value>".
-      const indexed = JSON.stringify({
-        type: 'GATEWAY_INTERACTION_CREATE',
-        data: {
-          type: 3,
-          id: 'interaction-2',
-          token: 'interaction-token',
-          channel_id: 'chan-1',
-          data: { custom_id: 'ncq:q-2:0\n0' },
-          member: { user: { id: 'clicker-1', username: 'clicker' } },
-          message: { id: 'card-2', embeds: [] },
-        },
-      });
-      expect((await post(indexed, { 'x-discord-gateway-token': BOT_TOKEN })).status).toBe(200);
-      // No render row exists for q-2, so the index passes through unresolved —
-      // the point is that it is "0", not "0\n0".
-      expect(onAction).toHaveBeenCalledWith('q-2', '0', 'clicker-1', {
-        messageId: 'card-2',
-        platformId: 'chan-1',
-      });
-    } finally {
-      await bridge.teardown();
-    }
-  });
 });

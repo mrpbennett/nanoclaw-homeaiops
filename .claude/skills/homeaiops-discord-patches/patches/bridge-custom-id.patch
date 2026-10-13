@@ -1,0 +1,25 @@
+diff --git a/src/channels/chat-sdk-bridge.ts b/src/channels/chat-sdk-bridge.ts
+index d32c4355..066c7e62 100644
+--- a/src/channels/chat-sdk-bridge.ts
++++ b/src/channels/chat-sdk-bridge.ts
+@@ -1122,11 +1122,16 @@ async function handleForwardedEvent(
+       // Parse the selected option from custom_id
+       let questionId: string | undefined;
+       let tail: string | undefined;
+-      if (customId?.startsWith('ncq:')) {
+-        const colonIdx = customId.indexOf(':', 4); // after "ncq:"
++      // @chat-adapter/discord encodes custom_id as "<actionId>\n<value>" when a
++      // button has a value. The option index is already in the actionId, so
++      // drop the "\n<value>" suffix or the tail becomes "0\n0" and never
++      // resolves to a real option value.
++      const actionId = customId?.split('\n')[0];
++      if (actionId?.startsWith('ncq:')) {
++        const colonIdx = actionId.indexOf(':', 4); // after "ncq:"
+         if (colonIdx !== -1) {
+-          questionId = customId.slice(4, colonIdx);
+-          tail = customId.slice(colonIdx + 1);
++          questionId = actionId.slice(4, colonIdx);
++          tail = actionId.slice(colonIdx + 1);
+         }
+       }
+ 
